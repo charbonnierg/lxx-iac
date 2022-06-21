@@ -1,0 +1,5 @@
+- hosts: all
+  roles:
+    - role: system_users
+    - role: install_docker
+    - role: install_traefik

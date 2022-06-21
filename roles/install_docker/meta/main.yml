@@ -1,0 +1,23 @@
+galaxy_info:
+  author: Guillaume Charbonnier
+  description: Install Docker CE
+
+  license: MIT
+  min_ansible_version: "2.2"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - xenial
+        - bionic
+        - focal
+        - jammy
+
+  galaxy_tags:
+    - systemd
+    - docker
+    - docker-swarm
+    - docker-compose
+    - apt-get
+
+dependencies: []

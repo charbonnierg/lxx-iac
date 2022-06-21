@@ -1,0 +1,102 @@
+---
+entryPoints:
+  # HTTP entrypoint
+  http:
+    address: ":{{ traefik_internal_http_port }}"
+{% if traefik_enable_https_redirect|bool %}
+    http: 
+      redirections:
+        entryPoint:
+          to: https
+          scheme: https
+{% endif %}
+  # HTTPS entrypoint
+  https:
+    address: ":{{ traefik_internal_https_port }}"
+{% for (name, config) in traefik_additional_entrypoints.items()  %}
+  {{ name }}:
+    address: "{{ config.address }}"
+{% endfor %}
+{% if traefik_enable_prometheus_metrics|bool %}
+  metrics:
+    # Prometheus metrics entrypoint
+    address: ":{{ traefik_prometheus_metrics_port }}"
+{% endif %}
+
+
+# Enable docker provider
+providers:
+  docker:
+    swarmMode: true
+    endpoint: unix:///var/run/docker.sock
+    exposedByDefault: false
+    network: "{{ traefik_network }}"
+  file:
+    filename: /traefik.yml
+    watch: false
+
+# Configure API
+api:
+  insecure: {{ traefik_enable_api_insecure }}
+  dashboard: {{ traefik_enable_api_dashboard }}
+  debug: {{ traefik_enable_api_debug }}
+
+{%- if traefik_enable_letsencrypt|bool %}
+
+# Enable Let's Encrypt certificates
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: {{ traefik_letsencrypt_email }}
+      storage: {{ traefik_letsencrypt_directory + 'acme.json' }}
+{% if traefik_letsencrypt_enable_dns_challenge|bool %}
+      dnsChallenge:
+        provider: {{ traefik_dns_challenge_provider }}
+        delayBeforeCheck: {{ traefik_dns_challenge_delay_before_check }}
+{% endif %}
+      caServer: {{ traefik_letsencrypt_ca_server }}
+{% endif %}
+
+# Configure logging
+log:
+  level: {{ traefik_log_level }}
+  format: {{ traefik_log_format }}
+
+# Enable access logs
+accessLog:
+  format: "{{ traefik_access_log_format }}"
+
+{% if traefik_enable_prometheus_metrics|bool or traefik_enable_datadog_metrics|bool %}
+metrics:
+{% if traefik_enable_prometheus_metrics|bool %}
+  # Enable prometheus metrics
+  prometheus:
+    entryPoint: metrics
+{% endif %}
+{% if traefik_enable_datadog_metrics|bool %}
+  datadog:
+    address: "{{ traefik_datadog_metrics_agent_address }}"
+    pushInterval: "{{ traefik_datadog_metrics_push_interval }}"
+{% endif %}
+{% endif %}
+{% if traefik_enable_datadog_tracing|bool %}
+tracing:
+  datadog:
+    localAgentHostPort: {{ traefik_datadog_tracing_agent_address }}
+    {# prioritySampling: true #}
+{% endif %}
+{% if traefik_enable_jaeger_tracing|bool %}
+tracing:
+  jaeger:
+    samplingServerURL: {{ traefik_jaeger_sampling_server_url }}
+    localAgentHostPort: {{ traefik_jaeger_tracing_agent_address }}
+    traceContextHeaderName: {{ traefik_jaeger_trace_context_name }}
+    collector:
+      endpoint: {{ traefik_jaeger_collector_endpoint }}
+{% endif %}
+
+{% if traefik_http_routers|bool or traefik_http_services|bool %}
+http:
+  routers: {{ traefik_http_routers | default(omit) }}
+  services: {{ traefik_http_services | default(omit) }}
+{% endif %}

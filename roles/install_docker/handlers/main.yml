@@ -1,0 +1,11 @@
+---
+- name: restart docker
+  service:
+    name: docker
+    state: "{{ docker_restart_handler_state }}"
+  listen: docker daemon configuration changed
+
+- name: update apt cache
+  apt:
+    update_cache: yes
+  listen: apt sources changed

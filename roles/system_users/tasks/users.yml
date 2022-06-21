@@ -1,0 +1,34 @@
+---
+# Tasks file used to configure system users.
+#
+# Module References:
+#   * ansible.builtin.user: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html
+
+- name: Create users if they do not exist yet else update users
+  user:
+    # User must have an attribute "name"
+    name: "{{ user.name }}"
+    # Optionally you can set a GECOS
+    comment: "{{ user.gecos | default(omit) }}"
+    # UID will be set automatically if not provided
+    uid: "{{ user.uid | default(omit) }}"
+    # By default home folder is created
+    create_home: "{{ user.create_home | default(true) }}"
+    # By default /bin/bash is used
+    shell: "{{ user.shell | default('/bin/bash') }}"
+    # By default homedir is set to /home/<username>
+    # You can change the default value if you want.
+    home: "{{ user.homedir | default(omit) }}"
+    # By default the user will be present
+    state: "{{ user.state | default('present') }}"
+    # By default no password is given
+    password: "{{ user.password | default(omit) }}"
+    # Optionally set the user's primary group (takes a group name)
+    group: "{{ user.group | default(omit) }}"
+    # By default user is not added in any group
+    groups: "{{ user.groups | default(omit) }}"
+    # Lock user password
+    password_lock: "{{ user.password_lock | default(omit) }}"
+  loop: "{{ system_users }}"
+  loop_control:
+    loop_var: user

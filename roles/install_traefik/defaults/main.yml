@@ -1,0 +1,98 @@
+---
+traefik_subdomain: traefik
+traefik_domain: lxx.quest
+# Configuration file
+traefik_config_file: /etc/traefik/config.yml
+# Token file
+traefik_acme_token_file: /etc/traefik/acme_token
+# Name of traefik service
+traefik_service_name: traefik
+# Docker image used by traefik service
+traefik_image: traefik:v2.7
+# Docker network used by traefik service
+traefik_network: "traefik-network"
+# Port used for HTTP inside the container
+traefik_internal_http_port: 80
+# Port used for HTTPS inside the container
+traefik_internal_https_port: 443
+# Additional entrypoints
+traefik_additional_entrypoints: {}
+# Entrypoints used for traefik dashboard
+traefik_default_entrypoints: http,https
+# Traefik static routers
+traefik_http_routers: {}
+traefik_http_services: {}
+traefik_http_middlewares: []
+# Enable HTTPS
+traefik_enable_https: true
+# Enable HTTPS to HTTP redirection
+traefik_enable_https_redirect: true
+# Configure log level
+traefik_log_level: INFO
+# Configure log format (Common Log Format by default).
+# The other allowed value is "CLF"
+traefik_log_format: json
+# Configure access log format
+traefik_access_log_format: json
+# Disable insecure access to Traefik dashboard
+traefik_enable_api_insecure: false
+# Enable secure access to Traefik dashboard
+traefik_enable_api_dashboard: true
+# Enable debug API
+traefik_enable_api_debug: true
+# Set to False to disable letsencrypt
+traefik_enable_letsencrypt: true
+traefik_letsencrypt_email: guillaume.charbonnier@araymond.com
+traefik_letsencrypt_directory: /letsencrypt/
+traefik_letsencrypt_ca_server: https://acme-staging-v02.api.letsencrypt.org/directory
+# Set to False to disable DNS challenge
+traefik_letsencrypt_enable_dns_challenge: true
+traefik_dns_challenge_token: changeme
+traefik_dns_challenge_provider: digitalocean
+traefik_dns_challenge_token_file_env: DO_AUTH_TOKEN_FILE
+traefik_dns_challenge_delay_before_check: 5
+
+# Configure ports
+traefik_published_ports:
+  - target_port: 80
+    published_port: "{{ traefik_internal_http_port }}"
+    protocol: tcp
+    mode: ingress
+  - target_port: 443
+    published_port: "{{ traefik_internal_https_port }}"
+    protocol: tcp
+    mode: ingress
+  - target_port: "{{ traefik_prometheus_metrics_port }}"
+    published_port: "{{ traefik_prometheus_metrics_port }}"
+    protocol: tcp
+    mode: ingress
+
+# Configure number of replicas for swarm Service
+traefik_replicas: 1
+# Configure minimum CPU allocation for the swarm service
+traefik_min_cpus: 0.05
+# Configure maximum CPU allocation for the swarm service
+traefik_max_cpus: 1
+# Configure minimum memory allocation for the swarm service
+traefik_min_memory: 32M
+# Configure maximum memory allocation for the swarm service
+traefik_max_memory: 512M
+# Set to true to enable prometheus metrics
+traefik_enable_prometheus_metrics: true
+traefik_prometheus_metrics_port: "9999"
+# Set to true to enable datadog metrics
+traefik_enable_datadog_metrics: false
+traefik_datadog_metrics_agent_address: "datadog-agent:8125"
+traefik_datadog_metrics_push_interval: 10s
+# Set to true to enable datadog tracing
+traefik_enable_datadog_tracing: false
+traefik_datadog_tracing_agent_address: "datadog-agent:8126"
+# Set to true to enable jaeger tracing
+traefik_enable_jaeger_tracing: false
+# Override variables as needed
+traefik_jaegger_all_in_one_host: jaeger
+traefik_jaeger_sampling_server_url: "http://{{ traefik_jaegger_all_in_one_host }}:5778/sampling"
+traefik_jaeger_tracing_agent_address: "{{ traefik_jaegger_all_in_one_host  }}:6831"
+traefik_jaeger_collector_endpoint: "http://{{ traefik_jaegger_all_in_one_host }}:14268/api/traces?format=jaeger.thrift"
+# Override the trace ID as needed
+traefik_jaeger_trace_context_name: traefik-trace-id

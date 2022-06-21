@@ -1,0 +1,24 @@
+---
+# Tasks file used to manage users SSH configuration.
+# This includes user SSH keys public and private keys as well as authorized keys.
+#
+# Module References:
+#   * ansible.builtin.user: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html
+#   * ansible.posix.authorized_keys: https://docs.ansible.com/ansible/latest/collections/ansible/posix/authorized_key_module.html
+
+- name: Create users ssh-keys when they do not exist
+  user:
+    name: "{{ user.name }}"
+    generate_ssh_key: true
+    ssh_key_bits: 2048
+    ssh_key_comment: "{{ user.name }}"
+  when: "user.generate_ssh_key is defined and user.generate_ssh_key|bool"
+  loop: "{{ system_users }}"
+  loop_control:
+    loop_var: user
+
+- name: Add authorized SSH keys for each user to enable passwordless ssh connection
+  authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ item.1 }}"
+  loop: "{{ lookup('subelements', system_users, 'ssh_authorized_keys', {'skip_missing': True}, wantlist=True) }}" # yamllint disable-line

@@ -1,0 +1,17 @@
+# Variables for role gucharbon.setup_docker
+---
+old_docker_packages:
+  - docker
+  - docker-engine
+  - docker.io
+  - containerd
+  - runc
+
+docker_dependencies:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common
+
+docker_gpg_key: https://download.docker.com/linux/ubuntu/gpg

@@ -1,0 +1,6 @@
+---
+- name: Init a new swarm with default parameters
+  docker_swarm:
+    state: present
+    advertise_addr: "{{ docker_swarm_advertise_addr|default(omit) }}"
+  when: "docker_swarm_init|bool"

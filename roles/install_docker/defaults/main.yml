@@ -1,0 +1,20 @@
+---
+docker_platform: "{{ ansible_machine|replace('aarch64', 'arm64')|replace('x86_64', 'amd64') }}"
+docker_repo: "deb [arch={{ docker_platform }}] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable" # yamllint disable-line
+
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - docker-compose-plugin
+  - containerd.io
+
+docker_service_state: started
+docker_service_enabled: true
+docker_restart_handler_state: restarted
+
+docker_daemon_debug: true
+docker_daemon_experimental: true
+docker_daemon_log_driver: journald
+
+docker_swarm_init: true
+docker_swarm_advertise_addr: "{{ local_address|default(omit) }}"

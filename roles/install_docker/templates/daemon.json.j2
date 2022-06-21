@@ -1,0 +1,8 @@
+{
+  "log-driver": "{{ docker_daemon_log_driver }}",
+  "log-opts": {
+    "labels": "com.docker.swarm.service.name"
+  },
+  "debug": {{ docker_daemon_debug | bool | to_json }},
+  "experimental": {{ docker_daemon_experimental | bool | to_json  }}
+}

@@ -1,0 +1,21 @@
+# Default user configuration.
+---
+default_username: lxx
+default_ssh_key: null
+
+# Create docker group with custom gid.
+system_groups:
+  - name: docker
+    gid: 12345
+
+# Create a single user without password and passwordless sudo by default.
+system_users:
+  - name: "{{ default_username }}"
+    groups:
+      - docker
+      - adm
+    create_home: true
+    sudo_user: true
+    generate_ssh_key: true
+    ssh_authorized_keys:
+      - "{{ default_ssh_key|default(omit) }}"

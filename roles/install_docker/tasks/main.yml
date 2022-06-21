@@ -1,0 +1,75 @@
+---
+- name: "Remove old versions of docker with apt"
+  apt:
+    name: "{{ old_docker_packages }}"
+    state: absent
+  tags:
+    - docker_package
+
+- name: "Install docker dependencies with apt"
+  apt:
+    name: "{{ docker_dependencies }}"
+    state: present
+  tags:
+    - docker_package
+
+- name: Add docker gpg key with apt_key
+  apt_key:
+    state: present
+    url: "{{ docker_gpg_key }}"
+  tags:
+    - docker_package
+
+- name: Add docker apt repository with apt_repository
+  apt_repository:
+    state: present
+    repo: "{{ docker_repo }}"
+    update_cache: no
+  notify:
+    - apt sources changed
+  tags:
+    - docker_package
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: "Install docker package with apt"
+  apt:
+    state: present
+    name: "{{ docker_packages }}"
+  notify: docker daemon configuration changed
+  tags:
+    - docker_package
+
+- name: Ensure /etc/docker directory exists
+  file:
+    path: /etc/docker
+    state: directory
+    mode: "0755"
+  tags:
+    - docker_config
+
+- name: Generate docker daemon configuration from template
+  template:
+    src: templates/daemon.json.j2
+    dest: /etc/docker/daemon.json
+  notify:
+    - docker daemon configuration changed
+  tags:
+    - docker_config
+
+- name: Ensure Docker is started and enabled at boot.
+  service:
+    name: docker
+    state: "{{ docker_service_state }}"
+    enabled: "{{ docker_service_enabled }}"
+  tags:
+    - docker_service
+
+- name: Ensure handlers are notified now to avoid firewall conflicts.
+  meta: flush_handlers
+
+- include_tasks: init_docker_swarm.yml
+  when: "docker_swarm_init | bool"
+  tags:
+    - docker_swarm

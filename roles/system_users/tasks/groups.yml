@@ -1,0 +1,12 @@
+---
+# Tasks file related to user groups management.
+#
+# Module References:
+#   * ansible.builtin.group: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/group_module.html
+
+- name: Create groups if they do not exist yet
+  group:
+    name: "{{ item.name }}"
+    state: present
+    gid: "{{ item.gid }}"
+  loop: "{{ system_groups }}"

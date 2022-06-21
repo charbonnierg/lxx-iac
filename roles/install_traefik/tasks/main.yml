@@ -1,0 +1,113 @@
+- name: Set host for traefik
+  set_fact:
+    traefik_host: "{{ traefik_subdomain }}.{{ traefik_domain }}"
+
+- name: Creates traefik directory on host
+  file:
+    path: "{{ traefik_config_file | dirname }}"
+    state: directory
+    group: root
+    owner: root
+
+- name: Create traefik netowrk
+  community.docker.docker_network:
+    name: "{{ traefik_network }}"
+    attachable: true
+    driver: overlay
+    labels:
+      owner: traefik
+
+- name: Generate traefik environment variables
+  set_fact:
+    traefik_env: |
+      {
+        "{{ traefik_dns_challenge_token_file_env }}": "/acme_token"
+      }
+
+- name: Generate traefik labels
+  set_fact:
+    traefik_labels: |
+      {
+        "traefik.enable": "true",
+        "traefik.http.routers.{{ traefik_service_name }}.rule": "Host(`{{ traefik_host }}`)",
+        "traefik.http.routers.{{ traefik_service_name }}.entrypoints": "{{ traefik_default_entrypoints }}",
+        "traefik.http.routers.{{ traefik_service_name }}.service": "api@internal",
+        "traefik.http.services.{{ traefik_service_name }}-dummy.loadbalancer.server.port": "8080",
+        "traefik.http.routers.{{ traefik_service_name }}.tls": "{{ 'true' if traefik_enable_https else 'false' }}",
+        "traefik.http.routers.{{ traefik_service_name }}.tls.certresolver": "{{ 'letsencrypt' if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ traefik_service_name }}.tls.domains[0].main": "{{ traefik_domain if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ traefik_service_name }}.tls.domains[0].sans": "*.{{ traefik_domain if traefik_enable_letsencrypt else omit }}",
+        "prometheus-instance": "{{ traefik_service_name }}",
+        "prometheus-job": "traefik-exporter",
+        "prometheus-metrics-port": "9999",
+        "prometheus-metrics-path": "/metrics"
+      }
+
+- name: Generate acme token
+  copy:
+    content: "{{ traefik_dns_challenge_token }}"
+    dest: "{{ traefik_acme_token_file }}"
+  when: "traefik_letsencrypt_enable_dns_challenge|bool"
+
+- name: Write traefik configuration
+  template:
+    src: traefik.yml.j2
+    dest: "{{ traefik_config_file }}"
+    mode: u=rw,g=r,o=r
+
+- name: Deploy traefik service
+  docker_swarm_service:
+    # Service name
+    name: "{{ traefik_service_name  }}"
+    # Service images
+    image: "{{ traefik_image }}"
+    # Environment variables
+    env: "{{ traefik_env }}"
+    # Add constraint on service deployment
+    mode: replicated
+    replicas: "{{ traefik_replicas }}"
+    placement:
+      constraints:
+        - node.role==manager
+    # Run command at startup
+    args:
+      - --configFile=/traefik.yml
+    # Volumes
+    mounts:
+      - source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        type: bind
+        readonly: true
+      - source: traefik-letsencrypt
+        target: "{{ traefik_letsencrypt_directory }}"
+        type: volume
+      - source: "{{ traefik_config_file }}"
+        target: /traefik.yml
+        type: bind
+        readonly: true
+      - source: "{{ traefik_acme_token_file }}"
+        target: /acme_token
+        type: bind
+        readonly: true
+    # Configure resource reservations
+    reservations:
+      cpus: "{{ traefik_min_cpus }}"
+      memory: "{{ traefik_min_memory }}"
+    # Configure resource limits
+    limits:
+      cpus: "{{ traefik_max_cpus }}"
+      memory: "{{ traefik_max_memory }}"
+    # Configure restart policy
+    restart_config:
+      condition: on-failure
+      delay: 10s
+      max_attempts: 3
+      window: 120s
+    # Configure networks to attach service to
+    networks:
+      - name: "{{ traefik_network }}"
+        options:
+          external: true
+    # Configure ports
+    publish: "{{ traefik_published_ports }}"
+    labels: "{{ traefik_labels }}"

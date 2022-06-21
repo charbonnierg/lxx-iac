@@ -1,0 +1,38 @@
+---
+# Tasks file used to configure sudo usage.
+# Users can be configured to receive sudo permission.
+# It is possible to given passwordless sudo permission as well.
+#
+# Module References:
+#   * ansible.builtin.lineinfile: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html
+#   * ansible.builtin.user: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html
+
+# The lineinfile module is used to update the sudo configuration file (/etc/sudoers)
+# A line is added for each user which should be able to use sudo without password.
+- name: Give passworless sudo rights to specific users according to configuration
+  lineinfile:
+    dest: /etc/sudoers
+    # Insert after the first end of line found after regexp match
+    insertafter: EOF
+    line: "{{ user.name }} ALL=(ALL) NOPASSWD: ALL"
+    regexp: "^{{ user.name }} .*"
+    state: present
+  when: user.passwordless_sudo is defined and user.passwordless_sudo
+  # Loop on users
+  loop: "{{ system_users }}"
+  # Configure loop to use a friendly variable name
+  loop_control:
+    loop_var: user
+
+# On Ubuntu, a user added to the sudo group is allowed to use sudo.
+- name: Give sudo rights to sudo users according to configuration
+  user:
+    name: "{{ user.name }}"
+    groups: sudo
+    append: true
+  when: user.sudo_user is defined and user.sudo_user|bool
+  # Loop on users
+  loop: "{{ system_users }}"
+  # Configure loop to use a friendly variable name
+  loop_control:
+    loop_var: user

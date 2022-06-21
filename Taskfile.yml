@@ -1,0 +1,95 @@
+---
+version: "3"
+
+dotenv: [".env", "{{.HOME}}/.env"]
+
+vars:
+  DO_PAT: '{{.DO_PAT | default ""}}'
+  DO_SSH_KEY_NAME: '{{.DO_SSH_KEY_NAME | default "" }}'
+  DO_DOMAIN_NAME: '{{.DO_DOMAIN_NAME | default "lxx.quest"}}'
+  DROPLET_SIZE: '{{.DROPLET_SIZE | default "s-1vcpu-1gb"}}'
+  DO_REGION: '{{.DO_REGION | default "fra1"}}'
+  DB_SIZE: '{{.DB_SIZE | default "db-s-1vcpu-1gb" }}'
+  PRIVATE_KEY_FILE:
+    sh: echo "$HOME/.ssh/id_rsa"
+
+tasks:
+  debug:
+    cmds:
+      - cat {{.PRIVATE_KEY_FILE}}
+  init:
+    dir: tf/
+    cmds:
+      - terraform init
+
+  plan:
+    dir: tf/
+    cmds:
+      - mkdir -p .plans/
+      - |
+        terraform plan \
+          -var "do_token={{.DO_PAT}}" \
+          -var "domain_name={{.DO_DOMAIN_NAME}}" \
+          -var "ssh_key_name={{.DO_SSH_KEY_NAME}}" \
+          -var "ssh_private_key={{.PRIVATE_KEY_FILE}} " \
+          -var "droplet_size={{.DROPLET_SIZE}}" \
+          -var "db_cluster_size={{.DB_SIZE}}" \
+          -var "region={{.DO_REGION}}" \
+          -out .plans/deploy
+
+  destroy:
+    dir: tf/
+    cmds:
+      - |
+        terraform apply -destroy \
+          -auto-approve \
+          -var "do_token={{.DO_PAT}}" \
+          -var "domain_name={{.DO_DOMAIN_NAME}}" \
+          -var "ssh_key_name={{.DO_SSH_KEY_NAME}}" \
+          -var "ssh_private_key={{.PRIVATE_KEY_FILE}} " \
+          -var "droplet_size={{.DROPLET_SIZE}}" \
+          -var "db_cluster_size={{.DB_SIZE}}" \
+          -var "region={{.DO_REGION}}"
+
+  apply:
+    dir: tf/
+    cmds:
+      - terraform apply .plans/deploy
+
+  show-droplet:
+    dir: tf/
+    cmds:
+      - terraform state show 'digitalocean_droplet.lxx-droplet'
+
+  clean:
+    dir: tf/
+    cmds:
+      - rm -Rf .plans/
+      - rm -Rf .terraform/
+      - rm -f terraform.tfstate terraform.tfstate.backup
+
+  doc:
+    cmds:
+      - terraform-docs markdown tf
+
+  reset:
+    cmds:
+      - task: destroy
+      - task: plan
+      - task: apply
+
+  ssh:
+    cmds:
+      - ssh root@{{.target}}
+    vars:
+      target:
+        sh: task show-droplet | grep ipv4 | cut -d '"' -f2 | head -n 1
+    interactive: true
+
+  watch-cloud-init:
+    cmds:
+      - ssh root@{{.target}} tail -f /var/log/cloud-init-output.log
+    vars:
+      target:
+        sh: task show-droplet | grep ipv4 | cut -d '"' -f2 | head -n 1
+    interactive: true
