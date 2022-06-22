@@ -16,6 +16,7 @@ system_users:
       - adm
     create_home: true
     sudo_user: true
+    passwordless_sudo: true
     generate_ssh_key: true
     ssh_authorized_keys:
       - "{{ default_ssh_key|default(omit) }}"

@@ -64,10 +64,10 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   playbook.yml
 
 # Export some env variables
-echo "export MONGO_URI=${digitalocean_database_cluster.mongodb-lxx-cluster.uri}" >> /etc/profile
-echo "export MONGO_HOST=${digitalocean_database_cluster.mongodb-lxx-cluster.host}" >> /etc/profile
-echo "export MONGO_PORT=${digitalocean_database_cluster.mongodb-lxx-cluster.port}" >> /etc/profile
-echo "export MONGO_PASSWORD=${digitalocean_database_user.mongodb-lxx-user.password}" >> /etc/profile
+echo "export MONGO_URI='${digitalocean_database_cluster.mongodb-lxx-cluster.uri}'" >> /etc/profile
+echo "export MONGO_HOST='${digitalocean_database_cluster.mongodb-lxx-cluster.host}'" >> /etc/profile
+echo "export MONGO_PORT='${digitalocean_database_cluster.mongodb-lxx-cluster.port}'" >> /etc/profile
+echo "export MONGO_PASSWORD='${digitalocean_database_user.mongodb-lxx-user.password}'" >> /etc/profile
 echo "export MONGO_USER=lxx" >> /etc/profile
 EOF
 }

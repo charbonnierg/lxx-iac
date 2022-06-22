@@ -3,3 +3,4 @@
     - role: system_users
     - role: install_docker
     - role: install_traefik
+    - role: intall_minio

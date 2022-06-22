@@ -1,0 +1,96 @@
+- name: Set host for minio
+  set_fact:
+    minio_host: "{{minio_subdomain}}.{{ traefik_domain }}"
+    console_host: "{{minio_console_subdomain}}.{{ traefik_domain }}"
+
+- name: Creates MinIO directory on host
+  file:
+    path: "{{ minio_data_mount }}"
+    state: directory
+    group: root
+    owner: root
+
+- name: Create traefik netowrk
+  community.docker.docker_network:
+    name: "{{ traefik_network }}"
+    attachable: true
+    driver: overlay
+    labels:
+      owner: traefik
+
+- name: Generate MinIO labels
+  set_fact:
+    minio_labels: |
+      {
+        "traefik.enable": "true",
+        "traefik.http.routers.{{ minio_service_name }}-api.rule": "Host(`{{ minio_host }}`)",
+        "traefik.http.routers.{{ minio_service_name }}-api.entrypoints": "{{ traefik_default_entrypoints }}",
+        "traefik.http.routers.{{ minio_service_name }}-api.service": "{{ minio_service_name }}-api",
+        "traefik.http.services.{{ minio_service_name }}-api.loadbalancer.server.port": "9000",
+        "traefik.http.routers.{{ minio_service_name }}-api.tls": "{{ 'true' if traefik_enable_https else 'false' }}",
+        "traefik.http.routers.{{ minio_service_name }}-api.tls.certresolver": "{{ 'letsencrypt' if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ minio_service_name }}-api.tls.domains[0].main": "{{ traefik_domain if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ minio_service_name }}-api.tls.domains[0].sans": "{{ minio_host if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ minio_service_name }}-console.rule": "Host(`{{ console_host }}`)",
+        "traefik.http.routers.{{ minio_service_name }}-console.entrypoints": "{{ traefik_default_entrypoints }}",
+        "traefik.http.routers.{{ minio_service_name }}-console.service": "{{ minio_service_name }}-console",
+        "traefik.http.services.{{ minio_service_name }}-console.loadbalancer.server.port": "9001",
+        "traefik.http.routers.{{ minio_service_name }}-console.tls": "{{ 'true' if traefik_enable_https else 'false' }}",
+        "traefik.http.routers.{{ minio_service_name }}-console.tls.certresolver": "{{ 'letsencrypt' if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ minio_service_name }}-console.tls.domains[0].main": "{{ traefik_domain if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ minio_service_name }}-console.tls.domains[0].sans": "{{ console_host if traefik_enable_letsencrypt else omit }}",
+        "prometheus-instance": "{{ minio_service_name }}",
+        "prometheus-job": "minio-exporter",
+        "prometheus-metrics-port": "9999",
+        "prometheus-metrics-path": "/metrics"
+      }
+
+- name: Deploy MinIO service
+  docker_swarm_service:
+    # Service name
+    name: "{{ minio_service_name  }}"
+    # Service images
+    image: "{{ minio_image }}"
+    # Environment variables
+    env:
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
+      MINIO_ROOT_USER: "{{minio_user}}"
+      MINIO_ROOT_PASSWORD: "{{minio_password}}"
+      MINIO_SITE_REGION: "{{minio_region}}"
+      MINIO_SITE_NAME: "{{minio_site}}"
+      MINIO_SERVER_URL: "https://{{minio_host}}"
+      MINIO_BROWSER_REDIRECT_URL: "https://{{console_host}}"
+    # Add constraint on service deployment
+    mode: replicated
+    replicas: "{{ minio_replicas }}"
+    # Run command at startup
+    args:
+      - server
+      - /data
+      - --console-address
+      - ":9001"
+    # Volumes
+    mounts:
+      - source: "{{ minio_data_mount }}"
+        target: /data
+        type: bind
+    # Configure resource reservations
+    reservations:
+      cpus: "{{ minio_min_cpus }}"
+      memory: "{{ minio_min_memory }}"
+    # Configure resource limits
+    limits:
+      cpus: "{{ minio_max_cpus }}"
+      memory: "{{ minio_max_memory }}"
+    # Configure restart policy
+    restart_config:
+      condition: on-failure
+      delay: 10s
+      max_attempts: 3
+      window: 120s
+    # Configure networks to attach service to
+    networks:
+      - name: "{{ traefik_network }}"
+        options:
+          external: true
+    labels: "{{ minio_labels }}"

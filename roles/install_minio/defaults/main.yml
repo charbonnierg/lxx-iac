@@ -1,0 +1,29 @@
+---
+traefik_domain: lxx.quest
+minio_subdomain: storage
+minio_console_subdomain: minio
+
+minio_user: minioadmin
+minio_password: minioadmin
+minio_region: fra1
+minio_site: lxx-01
+
+minio_image: minio/minio:RELEASE.2022-06-20T23-13-45Z
+minio_data_mount: /var/lib/minio
+minio_service_name: minio
+# Configure number of replicas for swarm Service
+minio_replicas: 1
+# Configure minimum CPU allocation for the swarm service
+minio_min_cpus: 0.05
+# Configure maximum CPU allocation for the swarm service
+minio_max_cpus: 0.25
+# Configure minimum memory allocation for the swarm service
+minio_min_memory: 32M
+# Configure maximum memory allocation for the swarm service
+minio_max_memory: 256M
+
+# Traefik config
+traefik_enable_letsencrypt: true
+traefik_enable_https: true
+traefik_network: traefik-network
+traefik_default_entrypoints: http,https
