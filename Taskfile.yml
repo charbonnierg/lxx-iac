@@ -70,7 +70,7 @@ tasks:
 
   doc:
     cmds:
-      - terraform-docs markdown tf
+      - terraform-docs markdown tf > tf/README.md
 
   reset:
     cmds:
@@ -93,3 +93,10 @@ tasks:
       target:
         sh: task show-droplet | grep ipv4 | cut -d '"' -f2 | head -n 1
     interactive: true
+
+  check-cert:
+    cmds:
+      - curl --resolve traefik.lxx.quest:443:{{.target}} -iIv https://traefik.lxx.quest/dashboard/#/ 2>&1 | awk 'BEGIN { cert=0 } /^\* SSL connection/ { cert=1 } /^\*/ { if (cert) print }'
+    vars:
+      target:
+        sh: task show-droplet | grep ipv4 | cut -d '"' -f2 | head -n 1

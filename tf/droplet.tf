@@ -52,12 +52,23 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -e "traefik_dns_challenge_token=${var.do_token}" \
   -e "traefik_subdomain=traefik" \
   -e "traefik_domain=${var.domain_name}" \
-  -e "mongo_user=lxx" \
   -e "default_username=lxx" \
   -e "default_ssh_key='${data.digitalocean_ssh_key.ssh_key.public_key}'" \
   -e "docker_swarm_advertise_addr=$(ip -f inet addr show eth1 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')" \
   -e "traefik_letsencrypt_ca_server=https://acme-v02.api.letsencrypt.org/directory" \
+  -e "mongo_user=lxx" \
+  -e "mongo_password=${digitalocean_database_user.mongodb-lxx-user.password}" \
+  -e "mongo_uri=${digitalocean_database_cluster.mongodb-lxx-cluster.uri}" \
+  -e "mongo_host=${digitalocean_database_cluster.mongodb-lxx-cluster.host}" \
+  -e "mongo_port=${digitalocean_database_cluster.mongodb-lxx-cluster.port}" \
   playbook.yml
+
+# Export some env variables
+echo "export MONGO_URI=${digitalocean_database_cluster.mongodb-lxx-cluster.uri}" >> /etc/profile
+echo "export MONGO_HOST=${digitalocean_database_cluster.mongodb-lxx-cluster.host}" >> /etc/profile
+echo "export MONGO_PORT=${digitalocean_database_cluster.mongodb-lxx-cluster.port}" >> /etc/profile
+echo "export MONGO_PASSWORD=${digitalocean_database_user.mongodb-lxx-user.password}" >> /etc/profile
+echo "export MONGO_USER=lxx" >> /etc/profile
 EOF
 }
 
@@ -74,10 +85,3 @@ resource "null_resource" "cloud-init" {
     ]
   }
 }
-
-# Add those options when deploying mongo database too
-# -e "mongo_password=${digitalocean_database_user.mongodb-lxx-user.password}" \
-# -e "mongo_uri=${digitalocean_database_cluster.mongodb-lxx-cluster.uri}" \
-# -e "mongo_host=${digitalocean_database_cluster.mongodb-lxx-cluster.host}" \
-# -e "mongo_port=${digitalocean_database_cluster.mongodb-lxx-cluster.port}" \
-# -e "default_ssh_key=${data.digitalocean_ssh_key.ssh_key.public_key}" \
