@@ -50,7 +50,7 @@ ansible-galaxy collection install community.docker
 ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -i "$(hostname --short)," \
   -e "traefik_dns_challenge_token=${var.do_token}" \
-  -e "traefik_subdomain=traefik.${var.domain_name}" \
+  -e "traefik_subdomain=traefik" \
   -e "traefik_domain=${var.domain_name}" \
   -e "mongo_user=lxx" \
   -e "default_username=lxx" \
@@ -70,7 +70,7 @@ resource "null_resource" "cloud-init" {
       private_key = file("~/.ssh/id_rsa")
     }
     inline = [
-      "cloud-init status --wait > /dev/null"
+      "cloud-init status --wait > /dev/null & tail --pid $! -n +1 -f /var/log/cloud-init-output.log"
     ]
   }
 }
