@@ -1,0 +1,13 @@
+#
+# {{ ansible_managed }}
+#
+# See timesyncd.conf(5) for details.
+# Commented values are default values
+# Edit them to fit your needs
+
+[Time]
+NTP={{ timesync_ntp_hosts | default("") | join(" ") }}
+FallbackNTP={{ timesync_fallback_ntp_hosts | join(" ") }}
+#RootDistanceMaxSec=5
+#PollIntervalMinSec=32
+#PollIntervalMaxSec=2048

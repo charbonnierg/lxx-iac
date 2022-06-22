@@ -7,16 +7,20 @@ vars:
   DO_PAT: '{{.DO_PAT | default ""}}'
   DO_SSH_KEY_NAME: '{{.DO_SSH_KEY_NAME | default "" }}'
   DO_DOMAIN_NAME: '{{.DO_DOMAIN_NAME | default "lxx.quest"}}'
+  DOMAIN_NAME: "{{.DOMAIN_NAME | default .DO_DOMAIN_NAME}}"
   DROPLET_SIZE: '{{.DROPLET_SIZE | default "s-1vcpu-1gb"}}'
+  DROPLET_NAME: '{{.DROPLET_NAME | default "lxx-01"}}'
   DO_REGION: '{{.DO_REGION | default "fra1"}}'
-  DB_SIZE: '{{.DB_SIZE | default "db-s-1vcpu-1gb" }}'
+  DB_CLUSTER_NAME: '{{.DB_CLUSTER_NAME | default "lxx-cluster"}}'
+  DB_CLUSTER_SIZE: '{{.DB_CLUSTER_SIZE | default "db-s-1vcpu-1gb" }}'
   PRIVATE_KEY_FILE:
     sh: echo "$HOME/.ssh/id_rsa"
 
 tasks:
   debug:
     cmds:
-      - cat {{.PRIVATE_KEY_FILE}}
+      - echo {{.DOMAIN_NAME}}
+      - echo {{.DO_DOMAIN_NAME}}
   init:
     dir: tf/
     cmds:
@@ -30,10 +34,13 @@ tasks:
         terraform plan \
           -var "do_token={{.DO_PAT}}" \
           -var "domain_name={{.DO_DOMAIN_NAME}}" \
+          -var "domain={{.DOMAIN_NAME}}" \
           -var "ssh_key_name={{.DO_SSH_KEY_NAME}}" \
           -var "ssh_private_key={{.PRIVATE_KEY_FILE}} " \
           -var "droplet_size={{.DROPLET_SIZE}}" \
-          -var "db_cluster_size={{.DB_SIZE}}" \
+          -var "droplet_name={{.DROPLET_NAME}}" \
+          -var "db_cluster_size={{.DB_CLUSTER_SIZE}}" \
+          -var "db_cluster_name={{.DB_CLUSTER_NAME}}" \
           -var "region={{.DO_REGION}}" \
           -out .plans/deploy
 
@@ -45,10 +52,13 @@ tasks:
           -auto-approve \
           -var "do_token={{.DO_PAT}}" \
           -var "domain_name={{.DO_DOMAIN_NAME}}" \
+          -var "domain={{.DOMAIN_NAME}}" \
           -var "ssh_key_name={{.DO_SSH_KEY_NAME}}" \
           -var "ssh_private_key={{.PRIVATE_KEY_FILE}} " \
           -var "droplet_size={{.DROPLET_SIZE}}" \
-          -var "db_cluster_size={{.DB_SIZE}}" \
+          -var "droplet_name={{.DROPLET_NAME}}" \
+          -var "db_cluster_size={{.DB_CLUSTER_SIZE}}" \
+          -var "db_cluster_name={{.DB_CLUSTER_NAME}}" \
           -var "region={{.DO_REGION}}"
 
   apply:
@@ -103,7 +113,21 @@ tasks:
 
   check-cert:
     cmds:
-      - curl --resolve traefik.lxx.quest:443:{{.target}} -iIv https://traefik.lxx.quest/dashboard/#/ 2>&1 | awk 'BEGIN { cert=0 } /^\* SSL connection/ { cert=1 } /^\*/ { if (cert) print }'
+      - curl --resolve traefik.{{.DOMAIN_NAME}}:443:{{.target}} -iIv https://traefik.lxx.quest/dashboard/#/ 2>&1 | awk 'BEGIN { cert=0 } /^\* SSL connection/ { cert=1 } /^\*/ { if (cert) print }'
+    vars:
+      target:
+        sh: task show-ip
+
+  tunnel-jupyter:
+    cmds:
+      - ssh -N -L 8888:localhost:10080 lxx@{{.target}}
+    vars:
+      target:
+        sh: task show-ip
+
+  code:
+    cmds:
+      - code --folder-uri vscode-remote://ssh-remote+lxx@${{.target}}/home/lxx
     vars:
       target:
         sh: task show-ip

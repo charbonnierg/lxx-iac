@@ -1,0 +1,17 @@
+http:
+  routers:
+    jupyterhub:
+      rule: "Host(`jupyterhub.{{ traefik_domain }}`)"
+      entrypoints: {{ traefik_default_entrypoints.split(',') | to_yaml }}
+      service: jupyterhub-proxy
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "{{ traefik_domain }}"
+            sans: "jupyterhub.{{ traefik_domain }}"
+
+  services:
+    jupyterhub-proxy:
+      loadBalancer:
+        servers:
+          - url: "http://{{ ansible_eth1.ipv4.address }}:10080"

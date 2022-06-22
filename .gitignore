@@ -1,7 +1,7 @@
 /.env
 
 **/.plans/
-
+**/*.log
 # Local .terraform directories
 **/.terraform/*
 

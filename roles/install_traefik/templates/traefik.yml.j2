@@ -33,7 +33,10 @@ providers:
     network: "{{ traefik_network }}"
   file:
     filename: /traefik.yml
-    watch: false
+    watch: true
+  file:
+    filename: /rules.yml
+    watch: true
 
 # Configure API
 api:

@@ -1,0 +1,27 @@
+# Default SSH server configuration
+---
+# Enable sshd
+enable_sshd: true
+start_sshd: true
+# SSH listenning port
+sshd_port: 22
+# SSH listenning host
+sshd_listen_address: 0.0.0.0
+# Enable strict mode
+sshd_strict_mode: "yes"
+# SSH authorized keys file
+sshd_authorized_keys: .ssh/authorized_keys
+# Policy for root login
+sshd_root_login: prohibit-password
+# Enable password authentication (this does not concern root user by default)
+sshd_password_authentication: "no"
+# Enable public key authentication
+sshd_public_key_authentication: "yes"
+# Disable challenge response authentication (It considerably slow down auth when enabled)
+sshd_challenge_response_authentication: "no"
+# Disable kerberos authentication (It considerably slow down SSH auth when enabled)
+sshd_kerberos_authentication: "no"
+# Disable GSSAPI authentication (It considerably slow down SSH auth when enabled)
+sshd_gssapi_authentication: "no"
+# Disable empty password
+sshd_empty_password: "no"

@@ -55,6 +55,12 @@
     dest: "{{ traefik_config_file }}"
     mode: u=rw,g=r,o=r
 
+- name: Write traefik rules
+  template:
+    src: rules.yml.j2
+    dest: "{{ traefik_rules_file }}"
+    mode: u=rw,g=r,o=r
+
 - name: Deploy traefik service
   docker_swarm_service:
     # Service name
@@ -83,6 +89,10 @@
         type: volume
       - source: "{{ traefik_config_file }}"
         target: /traefik.yml
+        type: bind
+        readonly: true
+      - source: "{{ traefik_rules_file }}"
+        target: /rules.yml
         type: bind
         readonly: true
       - source: "{{ traefik_acme_token_file }}"

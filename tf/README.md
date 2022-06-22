@@ -23,12 +23,12 @@ No modules.
 | [digitalocean_database_db.mongodb-lxx-db](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_db) | resource |
 | [digitalocean_database_firewall.mongodb-lxx-fw](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_firewall) | resource |
 | [digitalocean_database_user.mongodb-lxx-user](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_user) | resource |
-| [digitalocean_domain.lxx_domain](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/domain) | resource |
 | [digitalocean_droplet.lxx-droplet](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet) | resource |
 | [digitalocean_firewall.lxx-droplet-fw](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/firewall) | resource |
 | [digitalocean_record.lxx-subdomains](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/record) | resource |
 | [digitalocean_record.lxx_domain](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/record) | resource |
 | [null_resource.cloud-init](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
+| [digitalocean_domain.lxx_domain](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/data-sources/domain) | data source |
 | [digitalocean_ssh_key.ssh_key](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/data-sources/ssh_key) | data source |
 
 ## Inputs
@@ -36,12 +36,13 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_do_token"></a> [do\_token](#input\_do\_token) | Digital ocean token. See [digital ocean provider documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs#token) | `string` | n/a | yes |
-| <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | Domain to manager using Digital Ocean | `string` | n/a | yes |
+| <a name="input_domain"></a> [domain](#input\_domain) | Base domain name used to expose applications | `string` | n/a | yes |
+| <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | Domain to manage using Digital Ocean | `string` | n/a | yes |
 | <a name="input_ssh_key_name"></a> [ssh\_key\_name](#input\_ssh\_key\_name) | Name of allowed SSH key which can connect to root user | `string` | n/a | yes |
 | <a name="input_ssh_private_key"></a> [ssh\_private\_key](#input\_ssh\_private\_key) | SSH private key used to connect as root user | `string` | n/a | yes |
+| <a name="input_db_cluster_name"></a> [db\_cluster\_name](#input\_db\_cluster\_name) | name of digital ocean managed MongoDB database | `string` | `"mongo-lxx"` | no |
 | <a name="input_db_cluster_size"></a> [db\_cluster\_size](#input\_db\_cluster\_size) | size of digital ocean managed MongoDB database. See [database cluster resource documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_cluster#size) | `string` | `"db-s-1vcpu-1gb"` | no |
 | <a name="input_db_cluster_version"></a> [db\_cluster\_version](#input\_db\_cluster\_version) | version of digital ocean managed MongoDB database. See [database cluster resource documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_cluster#version) | `string` | `"5"` | no |
-| <a name="input_db_cluter_name"></a> [db\_cluter\_name](#input\_db\_cluter\_name) | name of digital ocean managed MongoDB database | `string` | `"mongo-lxx"` | no |
 | <a name="input_db_name"></a> [db\_name](#input\_db\_name) | name of database | `string` | `"lxx"` | no |
 | <a name="input_db_user_name"></a> [db\_user\_name](#input\_db\_user\_name) | name of database user | `string` | `"lxx"` | no |
 | <a name="input_droplet_image"></a> [droplet\_image](#input\_droplet\_image) | image used by digital ocean droplet. See [droplet resource documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet#image) | `string` | `"ubuntu-20-04-x64"` | no |

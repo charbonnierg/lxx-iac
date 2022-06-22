@@ -1,0 +1,30 @@
+---
+# Tasks file to configure OpenSSH server (sshd).
+# Configuration is generated from a template and written into /etc/ssh/sshd_config with proper permissions.
+#
+# Module References:
+#   * ansible.builtin.template: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html
+#   * ansible.builtin.meta: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/meta_module.html
+
+- name: Configure sshd
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    mode: "0644"
+  notify: sshd configuration changed
+  when: "enable_sshd|bool"
+
+- name: Ensure sshd is started
+  systemd:
+    name: sshd
+    state: started
+  when: "start_sshd|bool"
+
+- name: Ensure sshd is enabled
+  systemd:
+    name: sshd
+    enabled: yes
+  when: "enable_sshd|bool"
+
+- name: Force all notified handlers to run and wait until they're finished
+  meta: flush_handlers

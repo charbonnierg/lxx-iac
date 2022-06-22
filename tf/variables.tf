@@ -4,8 +4,14 @@ variable "do_token" {
 }
 variable "domain_name" {
   type        = string
-  description = "Domain to manager using Digital Ocean"
+  description = "Domain to manage using Digital Ocean"
 }
+
+variable "domain" {
+  type        = string
+  description = "Base domain name used to expose applications"
+}
+
 
 variable "ssh_key_name" {
   type        = string
@@ -42,7 +48,7 @@ variable "droplet_size" {
   default     = "s-1vcpu-1gb"
 }
 
-variable "db_cluter_name" {
+variable "db_cluster_name" {
   type        = string
   description = "name of digital ocean managed MongoDB database"
   default     = "mongo-lxx"

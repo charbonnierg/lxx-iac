@@ -1,0 +1,15 @@
+---
+timesync_timezone: Etc/UTC
+
+timesync_ntp_hosts:
+  - time.windows.com
+
+timesync_fallback_ntp_hosts:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+
+# Note that when using NTP, the clock is synchronized every 11 minutes
+# Setting the clock is only useful on configuration change
+timesync_set_hwclock: True

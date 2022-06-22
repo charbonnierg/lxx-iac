@@ -1,0 +1,7 @@
+# Handler file for setup_ubuntu role.
+---
+- name: reload sshd
+  service:
+    name: sshd
+    state: reloaded
+  listen: sshd configuration changed

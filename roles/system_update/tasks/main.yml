@@ -1,0 +1,14 @@
+---
+- name: Remove packages with apt
+  apt:
+    name: "{{ system_update_remove_packages }}"
+    state: absent
+  when: "system_update_remove_packages|length > 0"
+
+- name: Update distribution with apt
+  apt:
+    upgrade: dist
+    update_cache: true
+    cache_valid_time: 3600
+    dpkg_options: "{{ system_update_dpkg_options }}"
+  when: system_update_upgrade_dist|bool

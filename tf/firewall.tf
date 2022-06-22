@@ -1,6 +1,6 @@
 # Create a new firewall
 resource "digitalocean_firewall" "lxx-droplet-fw" {
-  name = "only-22-80-and-443"
+  name = "${digitalocean_droplet.lxx-droplet.name}-only-22-80-and-443"
 
   droplet_ids = [digitalocean_droplet.lxx-droplet.id]
 

@@ -51,19 +51,35 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -i "$(hostname --short)," \
   -e "traefik_dns_challenge_token=${var.do_token}" \
   -e "traefik_subdomain=traefik" \
-  -e "traefik_domain=${var.domain_name}" \
+  -e "traefik_domain=${var.domain}" \
   -e "default_username=lxx" \
   -e "default_ssh_key='${data.digitalocean_ssh_key.ssh_key.public_key}'" \
   -e "docker_swarm_advertise_addr=$(ip -f inet addr show eth1 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')" \
   -e "traefik_letsencrypt_ca_server=https://acme-v02.api.letsencrypt.org/directory" \
-  -e "mongo_user=lxx" \
-  -e "mongo_password=${digitalocean_database_user.mongodb-lxx-user.password}" \
-  -e "mongo_uri=${digitalocean_database_cluster.mongodb-lxx-cluster.uri}" \
-  -e "mongo_host=${digitalocean_database_cluster.mongodb-lxx-cluster.host}" \
-  -e "mongo_port=${digitalocean_database_cluster.mongodb-lxx-cluster.port}" \
   playbook.yml
 
-# Export some env variables
+# Install TLJH
+mkdir -p /opt/tljh
+virtualenv /opt/tljh/hub --download
+/opt/tljh/hub/bin/python -m pip install git+https://github.com/charbonnierg/the-littlest-jupyterhub.git@remove-jupyter-prefix
+/opt/tljh/hub/bin/python -m tljh.installer --admin lxx
+/opt/tljh/hub/bin/tljh-config set https.enabled false
+/opt/tljh/hub/bin/tljh-config set http.port 10080
+/opt/tljh/hub/bin/tljh-config set user_environment.default_app jupyterlab
+# Configure default environment variables for notebook users
+cat <<INNEREOF > /opt/tljh/config/jupyterhub_config.d/environment.py
+c.Spawner.environment = {
+  'MONGO_URI': '${digitalocean_database_cluster.mongodb-lxx-cluster.uri}',
+  'MONGO_HOST': '${digitalocean_database_cluster.mongodb-lxx-cluster.host}',
+  'MONGO_PORT': '${digitalocean_database_cluster.mongodb-lxx-cluster.port}',
+  'MONGO_PASSWORD': '${digitalocean_database_user.mongodb-lxx-user.password}',
+}
+INNEREOF
+# Make sure jupyterhub is started and reloaded
+systemctl enable --now jupyterhub
+/opt/tljh/hub/bin/tljh-config reload proxy
+/opt/tljh/hub/bin/tljh-config reload hub
+# Export environment variables for bash sessions
 echo "export MONGO_URI='${digitalocean_database_cluster.mongodb-lxx-cluster.uri}'" >> /etc/profile
 echo "export MONGO_HOST='${digitalocean_database_cluster.mongodb-lxx-cluster.host}'" >> /etc/profile
 echo "export MONGO_PORT='${digitalocean_database_cluster.mongodb-lxx-cluster.port}'" >> /etc/profile
@@ -71,6 +87,16 @@ echo "export MONGO_PASSWORD='${digitalocean_database_user.mongodb-lxx-user.passw
 echo "export MONGO_USER=lxx" >> /etc/profile
 EOF
 }
+
+# FIXME: Add those lines once Mongo database is included in deployment
+
+# -e "mongo_user=lxx" \
+# -e "mongo_password=${digitalocean_database_user.mongodb-lxx-user.password}" \
+# -e "mongo_uri=${digitalocean_database_cluster.mongodb-lxx-cluster.uri}" \
+# -e "mongo_host=${digitalocean_database_cluster.mongodb-lxx-cluster.host}" \
+# -e "mongo_port=${digitalocean_database_cluster.mongodb-lxx-cluster.port}" \
+
+
 
 resource "null_resource" "cloud-init" {
   provisioner "remote-exec" {

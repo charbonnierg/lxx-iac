@@ -1,0 +1,21 @@
+galaxy_info:
+  author: Guillaume Charbonnier
+  description: Set timezone and configure systemd-timesyncd
+
+  license: MIT
+  min_ansible_version: 2.2
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - xenial
+        - bionic
+        - focal
+        - jammy
+
+  galaxy_tags:
+    - systemd-timesyncd
+    - timesync
+    - timedatectl
+
+dependencies: []

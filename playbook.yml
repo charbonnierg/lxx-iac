@@ -1,6 +1,9 @@
 - hosts: all
   roles:
+    - role: system_update
+    - role: configure_openssh
+    - role: configure_timesync
     - role: system_users
     - role: install_docker
     - role: install_traefik
-    - role: intall_minio
+    - role: install_minio

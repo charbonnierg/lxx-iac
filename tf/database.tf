@@ -1,6 +1,6 @@
 # Create a new database cluster
 resource "digitalocean_database_cluster" "mongodb-lxx-cluster" {
-  name       = var.db_cluter_name
+  name       = var.db_cluster_name
   engine     = "mongodb"
   version    = var.db_cluster_version
   size       = var.db_cluster_size
