@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Guillaume Charbonnier
+  description: Install Bible Clusterer Application
+
+  license: MIT
+  min_ansible_version: "2.2"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - xenial
+        - bionic
+        - focal
+        - jammy
+
+  galaxy_tags:
+    - docker
+    - bible-clusterer
+
+dependencies: []

@@ -1,0 +1,56 @@
+- name: Set host for the bible clusterer application
+  set_fact:
+    bible_clusterer_host: "{{bible_clusterer_subdomain}}.{{ traefik_domain }}"
+
+- name: Create traefik netowrk
+  community.docker.docker_network:
+    name: "{{ traefik_network }}"
+    attachable: true
+    driver: overlay
+    labels:
+      owner: traefik
+
+- name: Generate bible clusterer labels
+  set_fact:
+    bible_clusterer_labels: |
+      {
+        "traefik.enable": "true",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.rule": "Host(`{{ bible_clusterer_host }}`)",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.entrypoints": "{{ traefik_default_entrypoints }}",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.service": "{{ bible_clusterer_service_name }}",
+        "traefik.http.services.{{ bible_clusterer_service_name }}-all-in-one.loadbalancer.server.port": "80",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls": "{{ 'true' if traefik_enable_https else 'false' }}",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls.certresolver": "{{ 'letsencrypt' if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls.domains[0].main": "{{ traefik_domain if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls.domains[0].sans": "{{ bible_clusterer_host if traefik_enable_letsencrypt else omit }}",
+      }
+
+- name: Deploy bible clusterer service
+  docker_swarm_service:
+    # Service name
+    name: "{{ bible_clusterer_service_name  }}"
+    # Service images
+    image: "{{ bible_clusterer_image }}"
+    # Add constraint on service deployment
+    mode: replicated
+    replicas: "{{ bible_clusterer_replicas }}"
+    # Configure resource reservations
+    reservations:
+      cpus: "{{ bible_clusterer_min_cpu }}"
+      memory: "{{ bible_clusterer_min_memory }}"
+    # Configure resource limits
+    limits:
+      cpus: "{{ bible_clusterer_max_cpu }}"
+      memory: "{{ bible_clusterer_max_memory }}"
+    # Configure restart policy
+    restart_config:
+      condition: on-failure
+      delay: 10s
+      max_attempts: 3
+      window: 120s
+    # Configure networks to attach service to
+    networks:
+      - name: "{{ traefik_network }}"
+        options:
+          external: true
+    labels: "{{ bible_clusterer_labels }}"

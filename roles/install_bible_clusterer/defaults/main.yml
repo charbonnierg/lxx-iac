@@ -1,0 +1,20 @@
+bible_clusterer_subdomain: app
+traefik_domain: lxx.quest
+
+# FIXME: Define image name
+bible_clusterer_image: "..."
+
+bible_clusterer_replicas: 1
+
+traefik_network: traefik-network
+bible_clusterer_service_name: bible-clusterer
+
+traefik_default_entrypoints: http,https
+traefik_enable_https: true
+traefik_enable_letsencrypt: true
+
+bible_clusterer_min_cpu: 0.1
+bible_clusterer_max_cpu: 1
+
+bible_clusterer_min_memory: 32M
+bible_clusterer_max_memory: 512M

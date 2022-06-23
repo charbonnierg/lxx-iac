@@ -56,6 +56,7 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -e "default_ssh_key='${data.digitalocean_ssh_key.ssh_key.public_key}'" \
   -e "docker_swarm_advertise_addr=$(ip -f inet addr show eth1 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')" \
   -e "traefik_letsencrypt_ca_server=https://acme-v02.api.letsencrypt.org/directory" \
+  -e "sshd_port=${var.ssh_port}" \
   playbook.yml
 
 # Install TLJH

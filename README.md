@@ -2,7 +2,18 @@
 
 **Objective**:
 
-This repository can be used to deploy a virtual machine (droplet) on Digital Ocean.
+This repository can be used to deploy an Ubuntu virtual machine (droplet) on Digital Ocean.
+
+The following configuration are performed:
+
+- [x] Update of system packages using `apt-get`
+- [x] Configuration of OpenSSH server to allow key pair authentication only
+- [x] Configuration of `systemd-timesyncd` to set system local time and configure time synchronnisation
+- [x] Configuration of system users
+- [x] Docker installation
+- [x] Traefik Proxy installation
+- [x] MinIO Cloud Storage installation
+- [ ] Bible Clusterer Application installation
 
 ## Supported development environments
 

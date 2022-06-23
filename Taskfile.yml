@@ -127,7 +127,7 @@ tasks:
 
   code:
     cmds:
-      - code --folder-uri vscode-remote://ssh-remote+lxx@${{.target}}/home/lxx
+      - code --folder-uri vscode-remote://ssh-remote+lxx@{{.target}}/home/lxx
     vars:
       target:
         sh: task show-ip

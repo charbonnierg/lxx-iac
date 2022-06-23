@@ -7,3 +7,4 @@
     - role: install_docker
     - role: install_traefik
     - role: install_minio
+    # - role: install_bible_clusterer

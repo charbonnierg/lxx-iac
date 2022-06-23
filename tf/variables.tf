@@ -77,3 +77,9 @@ variable "db_user_name" {
   description = "name of database user"
   default     = "lxx"
 }
+
+variable "ssh_port" {
+  type        = number
+  description = "port used to connect using SSH"
+  default     = 22
+}
