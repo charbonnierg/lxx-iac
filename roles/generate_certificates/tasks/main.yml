@@ -15,13 +15,15 @@
     - "{{ lego_home }}"
     - "{{ lego_home }}/certificates"
 
-- name: create the lego client binary directory
+- name: create the lego client binary and scripts directory
   file:
-    path: "{{ lego_home }}/bin"
+    path: "{{ item }}"
     state: directory
     owner: "{{ lego_user }}"
     group: "{{ lego_user }}"
-    mode: 0700
+  loop:
+    - "{{ lego_home }}/bin"
+    - "{{ lego_home }}/scripts"
 
 # Install lego
 - name: get the compressed lego client binary
@@ -34,9 +36,13 @@
     group: "{{ lego_user }}"
 
 # create each certificate
-- name: certificate
-  include_tasks: certificate.yml
+- name: create certificate
+  include_tasks: create.yml
   loop: "{{ certificates }}"
   loop_control:
     loop_var: cert
     label: "{{ cert.account_email }}"
+
+# create timers to renew certificate
+- name: create systemd timer
+  include_tasks: renew.yml

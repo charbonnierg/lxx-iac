@@ -1,0 +1,14 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# run this script daily to renew any letsencrypt certs that need renewing
+# renew cert if it expires within 30 days
+
+{% for cert in certificates %}
+echo "$(date) checking for cert update for {{ ', '.join(cert.domains) }}."
+# {{ ', '.join(cert.domains) }}
+DO_AUTH_TOKEN="{{ do_auth_token | mandatory }}" {{ lego_home }}/bin/lego --path="{{ lego_home }}" --email="{{ cert.account_email | mandatory }}" --domains {{ ' --domains '.join(cert.domains) }} --dns="digitalocean" renew --days 30
+
+{% endfor %}
+{% if cert.reload_cmd is defined %}
+{{ cert.reload_cmd }}
+{% endif %}

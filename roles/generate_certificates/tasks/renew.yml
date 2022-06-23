@@ -1,0 +1,19 @@
+---
+- name: "Create script to renew certificates for {{ ', '.join(cert.domains) }}"
+  template:
+    src: renew.sh.j2
+    dest: "{{ lego_home }}/scripts/renew-certs.sh"
+    owner: "{{ lego_user }}"
+    group: "{{ lego_user }}"
+    mode: 0740
+
+- name: "Install systemd timers to generate certificates for {{ ', '.join(cert.domains) }}"
+  include_role:
+    name: install_timers
+  vars:
+    timers:
+      renew-certs:
+        timer_command: "{{ lego_home }}/scripts/renew-certs.sh"
+        timer_user: "{{ lego_user }}"
+        timer_OnCalendar: "*-*-* 02:00:00 UTC"
+        timer_AccuracySec: 15s
