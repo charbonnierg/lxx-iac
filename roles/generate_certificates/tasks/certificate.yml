@@ -1,0 +1,15 @@
+---
+- name: "create letsencrypt certificate(using DNS-01) for {{ ', '.join(cert.domains) }}"
+  command: |
+    {{ lego_home }}/bin/lego \
+       --path {{ lego_home }} \
+       --accept-tos \
+      --email="{{ cert.account_email | mandatory }}" \
+      --domains {{ ' --domains '.join(cert.domains) }} \
+      --dns=digitalocean \
+      run
+  args:
+    creates: "{{ lego_home }}/certificates/{{ cert.domains[0] }}.crt"
+  environment:
+    DO_AUTH_TOKEN: "{{ do_auth_token | mandatory }}"
+  when: cert.domains|length>0

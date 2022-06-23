@@ -1,0 +1,6 @@
+lego_user: lego
+lego_home: /etc/lego
+# letsencrypt client(lego) release url
+lego_url: https://github.com/go-acme/lego/releases/download/v4.7.0/lego_v4.7.0_linux_amd64.tar.gz
+# List of certificates to obtain
+certificates: []

@@ -22,7 +22,7 @@
         "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls": "{{ 'true' if traefik_enable_https else 'false' }}",
         "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls.certresolver": "{{ 'letsencrypt' if traefik_enable_letsencrypt else omit }}",
         "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls.domains[0].main": "{{ traefik_domain if traefik_enable_letsencrypt else omit }}",
-        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls.domains[0].sans": "{{ bible_clusterer_host if traefik_enable_letsencrypt else omit }}",
+        "traefik.http.routers.{{ bible_clusterer_service_name }}-all-in-one.tls.domains[0].sans": "*.{{ traefik_domain if traefik_enable_letsencrypt else omit }}",
       }
 
 - name: Deploy bible clusterer service

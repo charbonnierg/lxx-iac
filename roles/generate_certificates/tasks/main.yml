@@ -1,0 +1,42 @@
+- name: create the letsencrypt user
+  user:
+    name: "{{ lego_user }}"
+    home: "{{ lego_home }}"
+    createhome: no
+
+- name: create the lego base and certificates directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ lego_user }}"
+    group: www-data
+    mode: 02750
+  loop:
+    - "{{ lego_home }}"
+    - "{{ lego_home }}/certificates"
+
+- name: create the lego client binary directory
+  file:
+    path: "{{ lego_home }}/bin"
+    state: directory
+    owner: "{{ lego_user }}"
+    group: "{{ lego_user }}"
+    mode: 0700
+
+# Install lego
+- name: get the compressed lego client binary
+  unarchive:
+    src: "{{ lego_url }}"
+    dest: "{{ lego_home }}/bin"
+    remote_src: true
+    creates: "{{ lego_home }}/bin/lego"
+    owner: "{{ lego_user }}"
+    group: "{{ lego_user }}"
+
+# create each certificate
+- name: certificate
+  include_tasks: certificate.yml
+  loop: "{{ certificates }}"
+  loop_control:
+    loop_var: cert
+    label: "{{ cert.account_email }}"

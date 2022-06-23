@@ -8,7 +8,7 @@ http:
         certResolver: letsencrypt
         domains:
           - main: "{{ traefik_domain }}"
-            sans: "jupyterhub.{{ traefik_domain }}"
+            sans: "*.{{ traefik_domain }}"
 
   services:
     jupyterhub-proxy:
