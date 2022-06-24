@@ -1,5 +1,8 @@
 /.env
 
+roles/install_nats
+sandbox
+
 **/.plans/
 **/*.log
 # Local .terraform directories

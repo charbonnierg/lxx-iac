@@ -41,6 +41,10 @@ apt-get install -y \
     vim \
     jq
 
+# Install nodejs
+curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+apt-get install -y nodejs
+
 # Install docker-py client and virtualenv
 python3 -m pip install --disable-pip-version-check -U --user --no-cache-dir pip setuptools wheel
 python3 -m pip install --no-cache-dir --root-user-action=ignore docker virtualenv pymongo
@@ -63,7 +67,6 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -e "default_username=lxx" \
   -e "default_ssh_key='${data.digitalocean_ssh_key.ssh_key.public_key}'" \
   -e "docker_swarm_advertise_addr=$(ip -f inet addr show eth1 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')" \
-  -e "traefik_letsencrypt_ca_server=https://acme-v02.api.letsencrypt.org/directory" \
   -e "sshd_port=${var.ssh_port}" \
   -e "{\"certificates\": $CERTIFICATES}" \
   playbook.yml
@@ -76,6 +79,9 @@ virtualenv /opt/tljh/hub --download
 /opt/tljh/hub/bin/tljh-config set https.enabled false
 /opt/tljh/hub/bin/tljh-config set http.port 10080
 /opt/tljh/hub/bin/tljh-config set user_environment.default_app jupyterlab
+# Install nodejs within TLJH environment
+/opt/tljh/user/bin/pip install jupyter_contrib_nbextensions
+/opt/tljh/user/bin/jupyter contrib nbextension install --sys-prefix
 
 # Make sure jupyterhub is started and reloaded
 systemctl enable --now jupyterhub
