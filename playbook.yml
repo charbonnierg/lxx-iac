@@ -4,6 +4,7 @@
     - role: configure_openssh
     - role: configure_timesync
     - role: system_users
+    - role: generate_certificates
     - role: install_docker
     - role: install_traefik
     - role: install_minio

@@ -8,6 +8,7 @@ vars:
   DO_SSH_KEY_NAME: '{{.DO_SSH_KEY_NAME | default "" }}'
   DO_DOMAIN_NAME: '{{.DO_DOMAIN_NAME | default "lxx.quest"}}'
   DOMAIN_NAME: "{{.DOMAIN_NAME | default .DO_DOMAIN_NAME}}"
+  ACCOUNT_EMAIL: '{{.ACCOUNT_EMAIL | default "admin@lxx.quest" }}'
   DROPLET_SIZE: '{{.DROPLET_SIZE | default "s-1vcpu-1gb"}}'
   DROPLET_NAME: '{{.DROPLET_NAME | default "lxx-01"}}'
   DO_REGION: '{{.DO_REGION | default "fra1"}}'
@@ -35,6 +36,7 @@ tasks:
           -var "do_token={{.DO_PAT}}" \
           -var "domain_name={{.DO_DOMAIN_NAME}}" \
           -var "domain={{.DOMAIN_NAME}}" \
+          -var "account_email={{.ACCOUNT_EMAIL}}" \
           -var "ssh_key_name={{.DO_SSH_KEY_NAME}}" \
           -var "ssh_private_key={{.PRIVATE_KEY_FILE}} " \
           -var "droplet_size={{.DROPLET_SIZE}}" \
@@ -53,6 +55,7 @@ tasks:
           -var "do_token={{.DO_PAT}}" \
           -var "domain_name={{.DO_DOMAIN_NAME}}" \
           -var "domain={{.DOMAIN_NAME}}" \
+          -var "account_email={{.ACCOUNT_EMAIL}}" \
           -var "ssh_key_name={{.DO_SSH_KEY_NAME}}" \
           -var "ssh_private_key={{.PRIVATE_KEY_FILE}} " \
           -var "droplet_size={{.DROPLET_SIZE}}" \
