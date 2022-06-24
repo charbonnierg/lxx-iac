@@ -1,6 +1,6 @@
 - hosts: all
   roles:
-    - role: system_update
+    # - role: system_update
     - role: configure_openssh
     - role: configure_timesync
     - role: system_users

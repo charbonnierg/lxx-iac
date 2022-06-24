@@ -45,13 +45,12 @@ apt-get install -y \
 python3 -m pip install --disable-pip-version-check -U --user --no-cache-dir pip setuptools wheel
 python3 -m pip install --no-cache-dir --root-user-action=ignore docker virtualenv pymongo
 
-export DEFAULT_CERT=$(jq --arg key0 'account_email' \
+export CERTIFICATES=$(jq --arg key0 'account_email' \
    --arg value0 "${var.account_email}" \
    --arg key1 'domains' \
    --argjson value1 "[\"${var.domain}\", \"*.${var.domain}\"]" \
    '. | .[$key0]=$value0 | .[$key1]=$value1' \
-   <<<'{}')
-export CERTIFICATES=$(echo "[$DEFAULT_CERT]")
+   <<<'{}' | jq -s -r)
 
 # Configure system using ansible
 ansible-galaxy collection install community.docker
@@ -66,16 +65,8 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -e "docker_swarm_advertise_addr=$(ip -f inet addr show eth1 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')" \
   -e "traefik_letsencrypt_ca_server=https://acme-v02.api.letsencrypt.org/directory" \
   -e "sshd_port=${var.ssh_port}" \
-  -e "certificates=\"$CERTIFICATES\"" \
+  -e "{\"certificates\": $CERTIFICATES}" \
   playbook.yml
-
-# Display certificates
-docker run --rm \
-  --env DO_AUTH_TOKEN="${var.do_token}" \
-  -v /etc/lego:/lxx-lego \
-  goacme/lego \
-  --path /lxx-lego \
-  list
 
 # Install TLJH
 mkdir -p /opt/tljh
