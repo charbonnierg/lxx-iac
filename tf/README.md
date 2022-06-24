@@ -19,10 +19,6 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [digitalocean_database_cluster.mongodb-lxx-cluster](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_cluster) | resource |
-| [digitalocean_database_db.mongodb-lxx-db](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_db) | resource |
-| [digitalocean_database_firewall.mongodb-lxx-fw](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_firewall) | resource |
-| [digitalocean_database_user.mongodb-lxx-user](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_user) | resource |
 | [digitalocean_droplet.lxx-droplet](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet) | resource |
 | [digitalocean_firewall.lxx-droplet-fw](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/firewall) | resource |
 | [digitalocean_record.lxx-subdomains](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/record) | resource |
@@ -35,6 +31,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_account_email"></a> [account\_email](#input\_account\_email) | Account email to use for let's encrypt registration | `string` | n/a | yes |
 | <a name="input_do_token"></a> [do\_token](#input\_do\_token) | Digital ocean token. See [digital ocean provider documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs#token) | `string` | n/a | yes |
 | <a name="input_domain"></a> [domain](#input\_domain) | Base domain name used to expose applications | `string` | n/a | yes |
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | Domain to manage using Digital Ocean | `string` | n/a | yes |
@@ -49,6 +46,7 @@ No modules.
 | <a name="input_droplet_name"></a> [droplet\_name](#input\_droplet\_name) | name of digital ocean droplet. See [droplet resource documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet#name) | `string` | `"lxx-01"` | no |
 | <a name="input_droplet_size"></a> [droplet\_size](#input\_droplet\_size) | size of digital ocean droplet. See [droplet resource documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet#size) | `string` | `"s-1vcpu-1gb"` | no |
 | <a name="input_region"></a> [region](#input\_region) | region in which both droplet and databases are deployed. See [database cluster resource documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/database_cluster#region) and [droplet resource documentation](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet#regionhttps://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet#region) | `string` | `"fra1"` | no |
+| <a name="input_ssh_port"></a> [ssh\_port](#input\_ssh\_port) | port used to connect using SSH | `number` | `22` | no |
 
 ## Outputs
 

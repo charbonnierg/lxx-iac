@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Guillaume Charbonnier
+  description: Configure journald log system
+
+  license: MIT
+  min_ansible_version: "2.2"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - xenial
+        - bionic
+        - focal
+        - jammy
+
+  galaxy_tags:
+    - journald
+    - systemd-journald
+
+dependencies: []

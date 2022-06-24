@@ -15,6 +15,10 @@ The droplet OS is Ubuntu 20.04 (focal fossa).
 - A default user named `lxx` is created with home directory `/home/lxx`
 - This user can use `sudo` without password and is a member of `docker` group
 
+#### Journald Configuration
+
+`journald` log system is configured to store logs persistently by default.
+
 #### SSH Configuration
 
 - Password authentication is disabled
