@@ -1,7 +1,7 @@
 http:
   routers:
     jupyterhub:
-      rule: "Host(`jupyterhub.{{ traefik_domain }}`)"
+      rule: "Host(`hub.{{ traefik_domain }}`)"
       entrypoints: {{ traefik_default_entrypoints.split(',') | to_yaml }}
       service: jupyterhub-proxy
       tls:

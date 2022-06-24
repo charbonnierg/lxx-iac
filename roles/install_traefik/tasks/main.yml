@@ -55,10 +55,17 @@
     dest: "{{ traefik_config_file }}"
     mode: u=rw,g=r,o=r
 
-- name: Write traefik rules
+- name: Create traefik extra rules directory
+  file:
+    path: "{{ traefik_rules_dir }}"
+    state: directory
+    group: www-data
+    mode: u=rw,g=r,o=r
+
+- name: Write jupyterhub traefik rules
   template:
-    src: rules.yml.j2
-    dest: "{{ traefik_rules_file }}"
+    src: jupyterhub.yml.j2
+    dest: "{{ traefik_rules_dir }}/jupyterhub.yml"
     mode: u=rw,g=r,o=r
 
 - name: Deploy traefik service
@@ -91,8 +98,8 @@
         target: /traefik.yml
         type: bind
         readonly: true
-      - source: "{{ traefik_rules_file }}"
-        target: /rules.yml
+      - source: "{{ traefik_rules_dir }}"
+        target: /rules.d
         type: bind
         readonly: true
       - source: "{{ traefik_acme_token_file }}"

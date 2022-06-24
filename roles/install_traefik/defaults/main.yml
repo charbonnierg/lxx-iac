@@ -3,7 +3,7 @@ traefik_subdomain: traefik
 traefik_domain: lxx.quest
 # Configuration file
 traefik_config_file: /etc/traefik/config.yml
-traefik_rules_file: /etc/traefik/rules.yml
+traefik_rules_dir: /etc/traefik/rules.d
 # Token file
 traefik_acme_token_file: /etc/traefik/acme_token
 # Name of traefik service

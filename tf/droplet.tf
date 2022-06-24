@@ -39,15 +39,35 @@ apt-get install -y \
     gnupg \
     lsb-release \
     vim \
-    jq
+    jq \
+    software-properties-common \
+    dirmngr \
+    gdebi-core
 
 # Install nodejs
 curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 apt-get install -y nodejs
 
+# Install code-server
+wget -q https://github.com/coder/code-server/releases/download/v4.4.0/code-server_4.4.0_amd64.deb
+dpkg -i code-server_4.4.0_amd64.deb
+rm -f code-server_4.4.0_amd64.deb
+
+# Install rserver
+# Fingerprint: E298A3A825C0D65DFD57CBB651716619E084DAB9
+wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+# add the R 4.0 repo from CRAN
+add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+apt-get install --no-install-recommends -y r-base
+wget -q https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2022.02.3-492-amd64.deb
+gdebi rstudio-server-2022.02.3-492-amd64.deb --non-interactive
+rm -f rstudio-server-2022.02.3-492-amd64.deb
+systemctl disable --now rstudio-server
+systemctl mask rstudio-server
+
 # Install docker-py client and virtualenv
 python3 -m pip install --disable-pip-version-check -U --user --no-cache-dir pip setuptools wheel
-python3 -m pip install --no-cache-dir --root-user-action=ignore docker virtualenv pymongo
+python3 -m pip install --no-cache-dir docker virtualenv pymongo
 
 export CERTIFICATES=$(jq --arg key0 'account_email' \
    --arg value0 "${var.account_email}" \
@@ -69,6 +89,7 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -e "docker_swarm_advertise_addr=$(ip -f inet addr show eth1 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')" \
   -e "sshd_port=${var.ssh_port}" \
   -e "{\"certificates\": $CERTIFICATES}" \
+  -e "traefik_letsencrypt_ca_server=https://acme-v02.api.letsencrypt.org/directory" \
   playbook.yml
 
 # Install TLJH
@@ -79,14 +100,20 @@ virtualenv /opt/tljh/hub --download
 /opt/tljh/hub/bin/tljh-config set https.enabled false
 /opt/tljh/hub/bin/tljh-config set http.port 10080
 /opt/tljh/hub/bin/tljh-config set user_environment.default_app jupyterlab
-# Install nodejs within TLJH environment
+
+# Install jupyterhub extensions
 /opt/tljh/user/bin/pip install jupyter_contrib_nbextensions
 /opt/tljh/user/bin/jupyter contrib nbextension install --sys-prefix
+/opt/tljh/user/bin/pip install git+https://github.com/dirkcgrunwald/jupyter_codeserver_proxy-.git
+/opt/tljh/user/bin/pip install jupyter-rsession-proxy jupyter-server-proxy jupyterlab-git jupyter-archive
+/opt/tljh/user/bin/jupyter serverextension enable --sys-prefix jupyter_server_proxy
+/opt/tljh/user/bin/jupyter labextension install @jupyterlab/server-proxy
+/opt/tljh/user/bin/jupyter lab build
 
 # Make sure jupyterhub is started and reloaded
-systemctl enable --now jupyterhub
 /opt/tljh/hub/bin/tljh-config reload proxy
 /opt/tljh/hub/bin/tljh-config reload hub
+sudo systemctl enable jupyterhub
 EOF
 }
 

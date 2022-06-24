@@ -1,19 +1,75 @@
 ## Infrastructure As Code on Digital Ocean
 
-**Objective**:
+## Virtual Machine Description
 
-This repository can be used to deploy an Ubuntu virtual machine (droplet) on Digital Ocean.
+This project can be used to spin-up a droplet (virtual machine) on Digital Ocean.
 
-The following configuration are performed:
+This droplet is configured on first boot in order to provide various services to end users.
 
-- [x] Update of system packages using `apt-get`
-- [x] Configuration of OpenSSH server to allow key pair authentication only
-- [x] Configuration of `systemd-timesyncd` to set system local time and configure time synchronnisation
-- [x] Configuration of system users
-- [x] Docker installation
-- [x] Traefik Proxy installation
-- [x] MinIO Cloud Storage installation
-- [ ] Bible Clusterer Application installation
+#### Operation System
+
+The droplet OS is Ubuntu 20.04 (focal fossa).
+
+#### Unix Users
+
+- A default user named `lxx` is created with home directory `/home/lxx`
+- This user can use `sudo` without password and is a member of `docker` group
+
+#### SSH Configuration
+
+- Password authentication is disabled
+- SSH keypairs must be used
+- Port 22 is used by default
+- A single SSH key can connect to both `root` and `lxx` user by default
+
+> Note: Use the `DO_SSH_KEY_NAME` environment variable to configure the name of SSH key to allow.
+
+#### Time Synchronisation
+
+- Time synchronisation is enabled using `systemd-timesyncd`.
+- The default NTP server is `time.windows.com`.
+
+#### Docker
+
+- Docker Engine is installed and can be used using the `docker` command.
+- Only users in `docker` group can run docker commands without `sudo`
+- Engine configuration can be found under `/etc/docker/daemon.json`
+
+#### Docker Swarm
+
+- A single-node docker swarm cluster is running by default.
+- Docker Swarm cluster advertise address is the droplet private address within its VPC (it means that it's possible to create a new droplet in the same VPC and join the swarm cluster)
+
+#### Traefik
+
+- Traefik reverse proxy is installed using Docker Swarm and listens on ports `80` and `443` on host machine.
+- Traefik dashboad can be reached on `https://traefik.<domain>` (default `https://traefik.lxx.quest`).
+
+> Note: Update `DOMAIN_NAME` to configure domain to use.
+> For example, using `DOMAIN_NAME=test.lxx.quest` leads to Traefik Dashboard listenning on <https://traefik.test.lxx.quest>
+
+> In order to expose docker services using Traefik, containers must be attached to the `traefik-network` (docker overlay network).
+
+#### MinIO
+
+- MinIO server is installed using Docker Swarm and is exposed behind Traefik:
+  - MinIO Dashboard can be reached on `https://minio.<domain>` (default `https://minio.lxx.quest`)
+  - MinIO Server can be reached on `https://storage.<domain>` (default `https://storage.lxx.quest`)
+
+#### Jupyter Hub
+
+- Jupyterhub is installed using [TLJH](https://tljh.jupyter.org/en/latest/)
+- Jupyter users are authenticated using `systemd`.
+  - Admin user is `lxx`
+    - Password is defined on first connection
+  - New users can be created from admin panel
+    - Unix users will be created automatically
+
+#### Let's Encrypt certificates
+
+- TLS certificates are available under `/etc/lego/certificates`
+- Certificates are renewed 30 days before expiration (check performed daily)
+
 
 ## Supported development environments
 
