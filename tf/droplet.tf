@@ -45,6 +45,13 @@ apt-get install -y \
 python3 -m pip install --disable-pip-version-check -U --user --no-cache-dir pip setuptools wheel
 python3 -m pip install --no-cache-dir --root-user-action=ignore docker virtualenv pymongo
 
+export CERTIFICATES=$(jq --arg key0 'account_email' \
+   --arg value0 "${var.account_email}" \
+   --arg key1 'domains' \
+   --argjson value1 "[\"${var.domain}\", \"*.${var.domain}\"]" \
+   '. | .[$key0]=$value0 | .[$key1]=$value1' \
+   <<<'{}')
+
 # Configure system using ansible
 ansible-galaxy collection install community.docker
 ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
@@ -57,7 +64,16 @@ ansible-pull -U https://github.com/charbonnierg/lxx-iac.git \
   -e "docker_swarm_advertise_addr=$(ip -f inet addr show eth1 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')" \
   -e "traefik_letsencrypt_ca_server=https://acme-v02.api.letsencrypt.org/directory" \
   -e "sshd_port=${var.ssh_port}" \
+  -e "certificates=\"$CERTIFICATES\"" \
   playbook.yml
+
+# Display certificates
+docker run --rm \
+  --env DO_AUTH_TOKEN="${var.do_token}" \
+  -v /etc/lego:/lxx-lego \
+  goacme/lego \
+  --path /lxx-lego \
+  list
 
 # Install TLJH
 mkdir -p /opt/tljh
@@ -67,35 +83,33 @@ virtualenv /opt/tljh/hub --download
 /opt/tljh/hub/bin/tljh-config set https.enabled false
 /opt/tljh/hub/bin/tljh-config set http.port 10080
 /opt/tljh/hub/bin/tljh-config set user_environment.default_app jupyterlab
-# Configure default environment variables for notebook users
-cat <<INNEREOF > /opt/tljh/config/jupyterhub_config.d/environment.py
-c.Spawner.environment = {
-  'MONGO_URI': '${digitalocean_database_cluster.mongodb-lxx-cluster.uri}',
-  'MONGO_HOST': '${digitalocean_database_cluster.mongodb-lxx-cluster.host}',
-  'MONGO_PORT': '${digitalocean_database_cluster.mongodb-lxx-cluster.port}',
-  'MONGO_PASSWORD': '${digitalocean_database_user.mongodb-lxx-user.password}',
-}
-INNEREOF
+
 # Make sure jupyterhub is started and reloaded
 systemctl enable --now jupyterhub
 /opt/tljh/hub/bin/tljh-config reload proxy
 /opt/tljh/hub/bin/tljh-config reload hub
-# Export environment variables for bash sessions
-echo "export MONGO_URI='${digitalocean_database_cluster.mongodb-lxx-cluster.uri}'" >> /etc/profile
-echo "export MONGO_HOST='${digitalocean_database_cluster.mongodb-lxx-cluster.host}'" >> /etc/profile
-echo "export MONGO_PORT='${digitalocean_database_cluster.mongodb-lxx-cluster.port}'" >> /etc/profile
-echo "export MONGO_PASSWORD='${digitalocean_database_user.mongodb-lxx-user.password}'" >> /etc/profile
-echo "export MONGO_USER=lxx" >> /etc/profile
 EOF
 }
 
-# FIXME: Add those lines once Mongo database is included in deployment
+# # FIXME: Add those lines once Mongo database is included in deployment
 
-# -e "mongo_user=lxx" \
-# -e "mongo_password=${digitalocean_database_user.mongodb-lxx-user.password}" \
-# -e "mongo_uri=${digitalocean_database_cluster.mongodb-lxx-cluster.uri}" \
-# -e "mongo_host=${digitalocean_database_cluster.mongodb-lxx-cluster.host}" \
-# -e "mongo_port=${digitalocean_database_cluster.mongodb-lxx-cluster.port}" \
+# # -e "mongo_user=lxx" \
+# # Configure default environment variables for notebook users
+# cat <<INNEREOF > /opt/tljh/config/jupyterhub_config.d/environment.py
+# c.Spawner.environment = {
+#   'MONGO_URI': '${digitalocean_database_cluster.mongodb-lxx-cluster.uri}',
+#   'MONGO_HOST': '${digitalocean_database_cluster.mongodb-lxx-cluster.host}',
+#   'MONGO_PORT': '${digitalocean_database_cluster.mongodb-lxx-cluster.port}',
+#   'MONGO_PASSWORD': '${digitalocean_database_user.mongodb-lxx-user.password}',
+# }
+# INNEREOF
+
+# # Export environment variables for bash sessions
+# echo "export MONGO_URI='${digitalocean_database_cluster.mongodb-lxx-cluster.uri}'" >> /etc/profile
+# echo "export MONGO_HOST='${digitalocean_database_cluster.mongodb-lxx-cluster.host}'" >> /etc/profile
+# echo "export MONGO_PORT='${digitalocean_database_cluster.mongodb-lxx-cluster.port}'" >> /etc/profile
+# echo "export MONGO_PASSWORD='${digitalocean_database_user.mongodb-lxx-user.password}'" >> /etc/profile
+# echo "export MONGO_USER=lxx" >> /etc/profile
 
 
 

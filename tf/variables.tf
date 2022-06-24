@@ -12,6 +12,10 @@ variable "domain" {
   description = "Base domain name used to expose applications"
 }
 
+variable "account_email" {
+  type        = string
+  description = "Account email to use for let's encrypt registration"
+}
 
 variable "ssh_key_name" {
   type        = string
