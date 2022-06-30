@@ -109,6 +109,13 @@ virtualenv /opt/tljh/hub --download
 /opt/tljh/user/bin/jupyter serverextension enable --sys-prefix jupyter_server_proxy
 /opt/tljh/user/bin/jupyter labextension install @jupyterlab/server-proxy
 /opt/tljh/user/bin/jupyter lab build
+# Install additional jupyter kernels (bash, typescript, nodejs)
+/opt/tljh/user/bin/pip install bash_kernel
+npm install -g --unsafe-perm ijavascript itypescript
+/opt/tljh/user/bin/python -m bash_kernel.install
+/opt/tljh/user/bin/conda run ijsinstall --install=global
+/opt/tljh/user/bin/conda run its --install=global
+
 
 # Make sure jupyterhub is started and reloaded
 /opt/tljh/hub/bin/tljh-config reload proxy
